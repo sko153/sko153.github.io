@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>URL, Base64, Hex 변환</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+	
+    <style>
+	
+    </style>
+
+    <script>
+			<!--URL-->
+        function encodeURL() {
+            var input = document.code.text.value;
+            var encoded = encodeURI(input);
+
+            document.code.text.value = encoded;
+        }
+
+        function decodeURL() {
+            var input = document.code.text.value;
+            var decoded = decodeURI(input);
+
+            document.code.text.value = decoded;
+        }
+		<!--Base64-->
+        function encodeBase64() {
+            var input = document.code.text.value;
+            var encoded = btoa(unescape(encodeURIComponent(input)));
+
+            document.code.text.value = encoded;
+        }
+
+        function decodeBase64() {
+            var input = document.code.text.value;
+            var decoded = decodeURIComponent(escape(window.atob(input)));
+
+            document.code.text.value = decoded;
+        }
+		<!--Hex-->
+        function encodeHex() {
+            var input = document.code.text.value;
+            var encoder = new TextEncoder();
+            var data = encoder.encode(input);
+            var encoded = Array.from(data).map(function(byte) {
+                return ('0' + byte.toString(16)).slice(-2);
+            }).join('');
+
+            document.code.text.value = encoded;
+        }
+
+        function decodeHex() {
+            var input = document.code.text.value;
+            var data = input.match(/.{1,2}/g).map(function(byte) {
+                return parseInt(byte, 16);
+            });
+            var decoder = new TextDecoder();
+            var decoded = decoder.decode(new Uint8Array(data));
+
+            document.code.text.value = decoded;
+        }
+    </script>
+
+</head>
+
+
+<body>
+    
+<!-- <h2>URL, Base64, Hex 변환</h2> -->
+    
+<form name=code onsubmit="return false()">
+<textarea rows=25 name=text style='width:100%;height:75%;' placeholder="Enter text to encode or decode here."></textarea>
+
+<table>
+<tr>
+<td align=center><input value="Encode" type=button onclick="encodeURL()"></td>
+<td align=center>URL</td>
+<td align=center><input value="Decode" type=button onclick="decodeURL()"></td>
+</tr>
+
+<td></td>
+
+<tr>
+<td align=center><input value="Encode" type=button onclick="encodeBase64()"></td>
+<td align=center>Base 64</td>
+<td align=center><input value="Decode" type=button onclick="decodeBase64()"></td>
+</tr>
+
+<td></td>
+
+<tr>
+<td align=center><input value="Encode" type=button onclick="encodeHex()"></td>
+<td align=center>Hex</td>
+<td align=center><input value="Decode" type=button onclick="decodeHex()"></td>
+</tr>
+
+<td></td>
+
+<tr>
+<td align=center></td>
+<td align=center><input value="Clear" type=reset></td>
+<td align=center></td>
+</tr>
+</table>
+</form>
+
+</body>
+</html>
