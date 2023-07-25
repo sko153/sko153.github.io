@@ -193,6 +193,15 @@
       // Enable or disable the clear button based on the received data
       clearBtn.disabled = receivedDataLog.length === 0;
     }
+	
+	// Function to show the connection alert
+    function showConnectionAlert() {
+      const alertMessage = '[COM** Table slam Deck] 을 선택해주세요'; // Customize the alert message
+      window.alert(alertMessage);
+	  
+	  // Call the connectSerialDevice() function regardless of the user response
+      connectSerialDevice();
+    }
 
     // Function to connect to the serial device
     async function connectSerialDevice() {
@@ -311,7 +320,10 @@
     }
 
     // Connect button click event
-    connectBtn.addEventListener('click', connectSerialDevice);
+    connectBtn.addEventListener('click', () => {
+      // Show an alert and call the connectSerialDevice() function when the "연결" (Connect) button is clicked
+      showConnectionAlert();
+    });
 
     // Send "on" button click event
     sendOnBtn.addEventListener('click', sendOnCommand);
