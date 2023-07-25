@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Table slam Deck setting</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    #buttonsContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    button {
+      padding: 6px 16px;
+    }
+	
+
+    #receivedDataContainer {
+      width: 50%; /* Set the width to a specific value, such as 50% of the viewport width */
+	  height: 50%;
+      max-width: 600px; /* You can also set a maximum width to ensure it doesn't become too large */
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #f5f5f5;
+      overflow-y: auto; /* Add back the overflow-y property to make the container scrollable */
+	  display:flex;
+      flex-direction: column-reverse;
+    }
+	
+	
+  </style>
+</head>
+<body>
+  <div id="buttonsContainer">
+    <button id="connectBtn" disabled>연결</button>
+	<button id="sendSetBtn" disabled>설정 값 확인</button>
+	<br>
+	<label>센서 설정</label>
+	<label for="onTime">On Time (ms):</label>
+    <input type="number" id="onTime" value="20" min="1">
+    <button id="sendOnBtn" disabled>저장</button>
+	<label for="offTime">Off Time (ms):</label>
+    <input type="number" id="offTime" value="100" min="1">
+    <button id="sendOffBtn" disabled>저장</button>
+	<br>
+	<label>모드 설정</label>
+    <button id="sendM0Btn" disabled>8 버튼</button>
+    <button id="sendM1Btn" disabled>7 버튼+센서</button>
+  </div>
+
+  <div id="receivedDataContainer">
+    <button id="clearBtn" disabled>로그 삭제</button>
+    <pre id="receivedData"></pre>
+  </div>
+
+  <script>
+    let port;
+    let writer;
+    let reader; // Declare the reader variable in the global scope
+    let receivedDataBuffer = ''; // Buffer to store incomplete lines of received data
+    let receivedDataLog = []; // Array to store received data
+
+    const connectBtn = document.getElementById('connectBtn');
+    const sendOnBtn = document.getElementById('sendOnBtn');
+    const sendOffBtn = document.getElementById('sendOffBtn');
+    const sendSetBtn = document.getElementById('sendSetBtn');
+    const sendM0Btn = document.getElementById('sendM0Btn');
+    const sendM1Btn = document.getElementById('sendM1Btn');
+    const onTimeInput = document.getElementById('onTime');
+    const offTimeInput = document.getElementById('offTime');
+    const receivedDataElement = document.getElementById('receivedData');
+
+    // Function to handle received data
+    function handleReceivedData(event) {
+      receivedDataBuffer += event.data;
+      const lines = receivedDataBuffer.split('\n');
+
+      // If the last line is incomplete, store it in the buffer for the next iteration
+      receivedDataBuffer = lines.pop();
+
+      // Process complete lines of data
+      for (const line of lines) {
+        const formattedLine = line.trim();
+        if (formattedLine !== '') {
+          receivedDataLog.push(formattedLine);
+        }
+      }
+
+      // Update the data log display
+      updateDataLog();
+    }
+
+    // Function to update the received data log
+    function updateDataLog() {
+	
+      receivedDataElement.innerText = receivedDataLog.join('\n');
+	  // Scroll the receivedData element to the bottom
+      receivedDataElement.scrollTop = receivedDataElement.scrollHeight;
+
+      // Enable or disable the clear button based on the received data
+      clearBtn.disabled = receivedDataLog.length === 0;
+    }
+
+    // Function to connect to the serial device
+    async function connectSerialDevice() {
+      try {
+        // Request access to the serial port
+        port = await navigator.serial.requestPort();
+
+        // Open the serial port and set the baud rate
+        await port.open({ baudRate: 115200 });
+
+        // Setup the reader to read data from the serial port
+        const textDecoder = new TextDecoderStream();
+        const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+        const reader = textDecoder.readable.getReader();
+
+        // Setup the writer to write data to the serial port
+        const textEncoder = new TextEncoderStream();
+        const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+        writer = textEncoder.writable.getWriter();
+		
+		// Enable the disconnect button and disable the connect button
+        connectBtn.disabled = true;
+
+        // Enable other buttons for sending commands
+        sendOnBtn.disabled = false;
+        sendOffBtn.disabled = false;
+        sendSetBtn.disabled = false;
+        sendM0Btn.disabled = false;
+        sendM1Btn.disabled = false;
+        onTimeInput.disabled = false;
+        offTimeInput.disabled = false;
+
+        // Listen for incoming data from the serial port
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          // Call the function to handle received data
+          handleReceivedData({ data: value });
+        }
+
+        // Handle port disconnection
+        await port.close();
+        reader.releaseLock();
+        receivedDataElement.innerText = 'Disconnected';
+		
+		// Enable the connect button and disable other buttons
+        connectBtn.disabled = false;
+        sendOnBtn.disabled = true;
+        sendOffBtn.disabled = true;
+        sendSetBtn.disabled = true;
+        sendM0Btn.disabled = true;
+        sendM1Btn.disabled = true;
+        onTimeInput.disabled = true;
+        offTimeInput.disabled = true;
+      } catch (error) {
+        console.error('Error: ', error);
+        receivedDataElement.innerText = 'Error: ' + error.message;
+      }
+    }
+
+    // Function to send "on" command to the serial device
+    async function sendOnCommand() {
+      if (writer) {
+        const onTime = onTimeInput.value.trim();
+        const data = `on ${onTime}\n`;
+        writer.write(data);
+      }
+    }
+
+    // Function to send "off" command to the serial device
+    async function sendOffCommand() {
+      if (writer) {
+        const offTime = offTimeInput.value.trim();
+        const data = `off ${offTime}\n`;
+        writer.write(data);
+      }
+    }
+
+    // Function to send "set" command to the serial device
+    async function sendSetCommand() {
+      if (writer) {
+        const data = 'set\n';
+        writer.write(data);
+      }
+    }
+
+    // Function to send "m 0" command to the serial device
+    async function sendM0Command() {
+      if (writer) {
+        const data = 'm 0\n';
+        writer.write(data);
+      }
+    }
+
+    // Function to send "m 1" command to the serial device
+    async function sendM1Command() {
+      if (writer) {
+        const data = 'm 1\n';
+        writer.write(data);
+      }
+    }
+
+    // Check if the Web Serial API is supported
+    if ('serial' in navigator) {
+      connectBtn.disabled = false;
+      sendOnBtn.disabled = true;
+      sendOffBtn.disabled = true;
+      sendSetBtn.disabled = true;
+      sendM0Btn.disabled = true;
+      sendM1Btn.disabled = true;
+      onTimeInput.disabled = true;
+      offTimeInput.disabled = true;
+    } else {
+      receivedDataElement.innerText = 'Web Serial API not supported in this browser.';
+    }
+
+    // Connect button click event
+    connectBtn.addEventListener('click', connectSerialDevice);
+
+    // Send "on" button click event
+    sendOnBtn.addEventListener('click', sendOnCommand);
+
+    // Send "off" button click event
+    sendOffBtn.addEventListener('click', sendOffCommand);
+
+    // Send "set" button click event
+    sendSetBtn.addEventListener('click', sendSetCommand);
+
+    // Send "m 0" button click event
+    sendM0Btn.addEventListener('click', sendM0Command);
+
+    // Send "m 1" button click event
+    sendM1Btn.addEventListener('click', sendM1Command);
+	
+	const clearBtn = document.getElementById('clearBtn');
+    clearBtn.addEventListener('click', () => {
+      // Clear the received data
+      receivedDataLog = [];
+      updateDataLog();
+    });
+  </script>
+</body>
+</html>
