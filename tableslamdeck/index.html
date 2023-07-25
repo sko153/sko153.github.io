@@ -1,16 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Table slam Deck setting</title>
-  <meta name=viewport content="width=device-width, initial-scale=1">
   <style>
     body {
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      height: 100vh;
       margin: 0;
       padding: 20px;
     }
@@ -20,16 +18,24 @@
       flex-direction: column;
       gap: 10px;
     }
+	
+	/* Separate containers for each row of buttons */
+    .buttonRow {
+      display: flex;
+      flex-direction: row;
+    }
 
     button {
       padding: 6px 16px;
     }
 	
+	input {
+      width: 50px;
+    }
 
     #receivedDataContainer {
-      width: 50%; /* Set the width to a specific value, such as 50% of the viewport width */
-	  height: 50%;
-      max-width: 600px; /* You can also set a maximum width to ensure it doesn't become too large */
+      width: 400px; /* Set the width to a specific value, such as 50% of the viewport width */
+	  height: 400px;
       border: 1px solid #ccc;
       padding: 10px;
       background-color: #f5f5f5;
@@ -46,17 +52,23 @@
     <button id="connectBtn" disabled>연결</button>
 	<button id="sendSetBtn" disabled>설정 값 확인</button>
 	<br>
-	<label>센서 설정</label>
-	<label for="onTime">On Time (ms):</label>
-    <input type="number" id="onTime" value="20" min="1">
-    <button id="sendOnBtn" disabled>저장</button>
-	<label for="offTime">Off Time (ms):</label>
-    <input type="number" id="offTime" value="100" min="1">
-    <button id="sendOffBtn" disabled>저장</button>
+	<label>센서감도 설정</label>
+    <div class="buttonRow">
+	  <label for="onTime">On Time (ms):</label>
+      <input type="number" id="onTime" value="20" min="1">
+      <button id="sendOnBtn" disabled>적용</button>
+	</div>
+	<div class="buttonRow">
+	  <label for="offTime">Off Time (ms):</label>
+      <input type="number" id="offTime" value="100" min="1">
+      <button id="sendOffBtn" disabled>적용</button>
+	</div>
 	<br>
 	<label>모드 설정</label>
-    <button id="sendM0Btn" disabled>8 버튼</button>
-    <button id="sendM1Btn" disabled>7 버튼+센서</button>
+	<div class="buttonRow">
+      <button style="width: 110px;" id="sendM0Btn" disabled>8 버튼</button>
+      <button style="width: 110px;" id="sendM1Btn" disabled>7 버튼+센서</button>
+	</div>
   </div>
 
   <div id="receivedDataContainer">
