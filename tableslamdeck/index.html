@@ -24,20 +24,21 @@
     #buttonsContainer {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 5px;
     }
 	
     .buttonRow {
       display: flex;
       flex-direction: row;
+	  gap: 5px;
     }
 
     button {
-      padding: 6px 16px;
+      padding: 5px 16px;
     }
 	
 	input {
-      width: 50px;
+      width: 60px;
     }
 
     #receivedDataContainer {
@@ -57,6 +58,33 @@
 	  flex-direction: column;
 	  text-align: left;
 	}
+	
+	.key-buttons-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .key-button {
+      width: 50px;
+      height: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+
+    }
+
+    .key-button:hover {
+      pointer-events: none;
+    }
+
+    .pressed {
+      background-color: #f0b0d0;
+    }
 	
   </style>
 </head>
@@ -84,8 +112,22 @@
 	  
       <label>모드 설정</label>
       <div class="buttonRow">
-        <button style="width: 110px;" id="sendM0Btn" disabled>8 버튼</button>
-        <button style="width: 110px;" id="sendM1Btn" disabled>7 버튼+센서</button>
+        <button style="width: 120px;" id="sendM0Btn" disabled>8 버튼</button>
+        <button style="width: 120px;" id="sendM1Btn" disabled>7 버튼+센서</button>
+      </div>
+	  
+	  <br>
+	  
+	  <label>키 테스트</label>
+	  <div class="key-buttons-container">
+        <div class="key-button" data-keycode="124">F13</div>
+        <div class="key-button" data-keycode="125">F14</div>
+        <div class="key-button" data-keycode="126">F15</div>
+        <div class="key-button" data-keycode="127">F16</div>
+        <div class="key-button" data-keycode="128">F17</div>
+        <div class="key-button" data-keycode="129">F18</div>
+        <div class="key-button" data-keycode="130">F19</div>
+        <div class="key-button" data-keycode="131">F20</div>
       </div>
     </div>
     
@@ -103,6 +145,8 @@
   </div>
 
   <script>
+  
+    //시리얼통신
     let port;
     let writer;
     let reader; // Declare the reader variable in the global scope
@@ -290,6 +334,49 @@
       receivedDataLog = [];
       updateDataLog();
     });
+	
+	
+	
+	
+	//키입력 테스트
+	const buttons = document.querySelectorAll(".key-button");
+
+    document.addEventListener("keydown", function(event) {
+      const keyCode = event.keyCode || event.which;
+      const keyButton = getKeyButton(keyCode);
+      if (keyButton) {
+        keyButton.classList.add("pressed");
+      }
+    });
+
+    document.addEventListener("keyup", function(event) {
+      const keyCode = event.keyCode || event.which;
+      const keyButton = getKeyButton(keyCode);
+      if (keyButton) {
+        keyButton.classList.remove("pressed");
+      }
+    });
+
+    buttons.forEach(button => {
+      button.addEventListener("click", function() {
+        const keyCode = this.getAttribute("data-keycode");
+        simulateKeyPress(keyCode);
+        this.classList.add("pressed");
+        setTimeout(() => {
+          this.classList.remove("pressed");
+        }, 100);
+      });
+    });
+
+    function getKeyButton(keyCode) {
+      return Array.from(buttons).find(button => button.getAttribute("data-keycode") === String(keyCode));
+    }
+
+    function simulateKeyPress(keyCode) {
+      const event = new KeyboardEvent("keydown", { keyCode: keyCode });
+      document.dispatchEvent(event);
+    }
+	
   </script>
 </body>
 </html>
