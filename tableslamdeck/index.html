@@ -144,19 +144,19 @@
         <div class="key-button" data-keycode="130">F19</div>
         <div class="key-button" data-keycode="131">F20</div>
       </div>
-      <span style="text-align: right; font-size: small;">(2023-07-26 17:58)</span>
+      <span style="text-align: right; font-size: small;">(2023-07-27 13:58)</span>
     </div>
     
     <div id="receivedDataContainer">
-	  <button id="clearBtn" disabled>로그 삭제</button>
+      <button id="clearBtn" disabled>로그 삭제</button>
       <pre id="receivedData"></pre>
     </div>
   </div>
   <br>
   <div id="helpLabelsContainer">
-    <label for="help">On Time 값이 작을수록 작은 충격에도 감지합니다 (센서 구슬이 떠있는 시간)</label>
+    <label for="help">On Time 값이 작을수록 작은 충격에도 감지합니다 (센서 구슬이 충격으로 떠있는 시간)</label>
     <label for="help">Off Time 값이 작으면 이중 인식이 될 수도 있습니다 (해당 시간 동안 충격이 없어야 다시 인식합니다)</label>
-	<div class="buttonWithText">
+    <div class="buttonWithText">
       <button onclick="toggleImage()">연결해제는 어떻게 하나요?</button>
       <span id="displayText">연결해제를 해도 키 입력 테스트는 가능합니다</span>
     </div>
@@ -206,38 +206,39 @@
     function updateDataLog() {
 	
       receivedDataElement.innerText = receivedDataLog.join('\n');
-	  // Scroll the receivedData element to the bottom
+      // Scroll the receivedData element to the bottom
       receivedDataElement.scrollTop = receivedDataElement.scrollHeight;
 
       // Enable or disable the clear button based on the received data
       clearBtn.disabled = receivedDataLog.length === 0;
     }
 	
-	// Function to show the connection alert
-    function showConnectionAlert() {
-      const alertMessage = '[COM** Table slam Deck] 을 선택해주세요'; // Customize the alert message
-      window.alert(alertMessage);
-	  
-	  // Call the connectSerialDevice() function regardless of the user response
-      connectSerialDevice();
+    // Function to show the connection confirm
+    function showConnectionConfirmation() {
+      const confirmationMessage = '[COM** Table slam Deck] 을 선택해주세요'; // Customize the alert message
+
+      if (confirm(confirmationMessage)) {
+        // User clicked "OK," call the connectSerialDevice() function
+        connectSerialDevice();
+      }
     }
 	
-	function toggleImage() {
+    function toggleImage() {
       // 요소를 가져옵니다.
       var imageElement = document.getElementById("myImage");
-	  var displayTextElement = document.getElementById("displayText");
+      var displayTextElement = document.getElementById("displayText");
 
       // 보이는 상태인지 확인합니다.
       var isVisible = imageElement.style.display === "block";
 
       // 보이는 상태면 숨기고, 안 보이는 상태면 보이도록 합니다.
       if (isVisible) {
-          imageElement.style.display = "none";
-		  displayTextElement.style.display = "none";
+        imageElement.style.display = "none";
+        displayTextElement.style.display = "none";
       } else {
-          imageElement.style.display = "block";
-		  displayTextElement.style.display = "inline";
-        }
+        imageElement.style.display = "block";
+        displayTextElement.style.display = "inline";
+      }
     }
 
     // Function to connect to the serial device
@@ -259,7 +260,7 @@
         const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
         writer = textEncoder.writable.getWriter();
 		
-		// Enable the disconnect button and disable the connect button
+	// Enable the disconnect button and disable the connect button
         connectBtn.disabled = true;
 
         // Enable other buttons for sending commands
@@ -285,7 +286,7 @@
         reader.releaseLock();
         receivedDataElement.innerText = 'Disconnected';
 		
-		// Enable the connect button and disable other buttons
+	// Enable the connect button and disable other buttons
         connectBtn.disabled = false;
         sendOnBtn.disabled = true;
         sendOffBtn.disabled = true;
@@ -358,8 +359,7 @@
 
     // Connect button click event
     connectBtn.addEventListener('click', () => {
-      // Show an alert and call the connectSerialDevice() function when the "연결" (Connect) button is clicked
-      showConnectionAlert();
+      showConnectionConfirmation();
     });
 
     // Send "on" button click event
@@ -387,8 +387,8 @@
 	
 	
 	
-	//키입력 테스트
-	const buttons = document.querySelectorAll(".key-button");
+    //키입력 테스트
+    const buttons = document.querySelectorAll(".key-button");
 
     document.addEventListener("keydown", function(event) {
       const keyCode = event.keyCode || event.which;
