@@ -15,14 +15,14 @@
 			<!--URL-->
         function encodeURL() {
             var input = document.code.text.value;
-            var encoded = encodeURI(input);
+            var encoded = encodeURIComponent(input);
 
             document.code.text.value = encoded;
         }
 
         function decodeURL() {
             var input = document.code.text.value;
-            var decoded = decodeURI(input);
+            var decoded = decodeURIComponent(input);
 
             document.code.text.value = decoded;
         }
