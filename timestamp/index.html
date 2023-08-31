@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>타임스탬프</title>
+  <meta name=viewport content="width=device-width, initial-scale=1">
+  <style>
+    textarea {
+      width: 100%;
+      height: 300px;
+    }
+
+    .input-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .input-container label {
+      margin-right: 5px;
+    }
+
+    .input-container button {
+      margin-left: 5px;
+    }
+	
+	.input-container input {
+      width: 50px;
+    }
+	
+	.copy-button {
+	  margin-left: 5px;
+	}
+  </style>
+  <script>
+    function adjustTimestamp() {
+      var hours = document.getElementById('hours').value;
+      var minutes = document.getElementById('minutes').value;
+      var seconds = document.getElementById('seconds').value;
+
+      var inputTime = hours + ':' + minutes + ':' + seconds;
+      var timestamps = document.getElementById('timestamps').value;
+
+      var lines = timestamps.split('\n');
+      var adjustedTimestamps = '';
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line !== '') {
+          var parts = line.split('\t');
+          var timestamp = parts[0].trim();
+          var text = parts[1] ? parts[1].trim() : '';
+
+          var newTimestamp = adjustTime(timestamp, inputTime);
+          adjustedTimestamps += newTimestamp + '\t' + text + '\n';
+        }
+      }
+
+      document.getElementById('adjustedTimestamps').value = adjustedTimestamps;
+    }
+
+    function adjustTime(timestamp, inputTime) {
+      var inputParts = inputTime.split(':');
+      var inputSeconds = (+inputParts[0]) * 60 * 60 + (+inputParts[1]) * 60 + (+inputParts[2]);
+
+      var parts = timestamp.split(':');
+      var seconds = (+parts[0]) * 60 * 60 + (+parts[1]) * 60 + (+parts[2]);
+
+      var adjustedSeconds = seconds + inputSeconds;
+
+      var hours = Math.floor(adjustedSeconds / 3600);
+      var minutes = Math.floor((adjustedSeconds % 3600) / 60);
+      var seconds = Math.floor(adjustedSeconds % 60);
+
+      return hours + ':' + pad(minutes) + ':' + pad(seconds);
+    }
+
+    function pad(number) {
+      return ('0' + number).slice(-2);
+    }
+
+    function increaseValue(inputId) {
+      var input = document.getElementById(inputId);
+      input.value = parseInt(input.value) + 1;
+    }
+
+    function decreaseValue(inputId) {
+      var input = document.getElementById(inputId);
+      input.value = parseInt(input.value) - 1;
+    }
+
+    function copyAdjustedTimestamps() {
+      var adjustedTimestamps = document.getElementById('adjustedTimestamps');
+      adjustedTimestamps.select();
+      document.execCommand('copy');
+    }
+    
+    function handleTabKey(event) {
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        var textarea = event.target;
+        var start = textarea.selectionStart;
+        var end = textarea.selectionEnd;
+        textarea.value = textarea.value.substring(0, start) + '\t' + textarea.value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + 1;
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>타임스탬프 <span style="font-size: small;">(2023-07-16 22:31)</span></h1>
+
+  <div class="input-container">
+    <label for="timestamps">타임스탬프:&nbsp;</label>
+    <input type="number" id="hours" value="0" />
+    <label>시&nbsp;:&nbsp;</label>
+    <input type="number" id="minutes" value="0" />
+    <label>분&nbsp;:&nbsp;</label>
+    <input type="number" id="seconds" value="0" />
+	<label>초</label>
+	
+	<button onclick="adjustTimestamp()">적용</button>
+  </div>
+  <textarea id="timestamps" placeholder="0:00:00	메모 (*수동 입력 시 '시간'과 '메모'사이는 띄어쓰기가 아닌 'Tab' 입니다)" onkeydown="handleTabKey(event)"></textarea>
+
+  <br /><br />
+
+  <label for="adjustedTimestamps">변경된 타임스탬프:</label>
+  <button class="copy-button" onclick="copyAdjustedTimestamps()">Copy</button>
+  <textarea id="adjustedTimestamps" readonly></textarea>
+  
+</body>
+</html>
