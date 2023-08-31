@@ -20,17 +20,13 @@
       margin-right: 5px;
     }
 
-    .input-container button {
-      margin-left: 5px;
-    }
-	
 	.input-container input {
       width: 50px;
     }
-	
-	.copy-button {
-	  margin-left: 5px;
-	}
+
+    button {
+      margin-left: 5px;
+    }
   </style>
   <script>
     function adjustTimestamp() {
@@ -79,14 +75,11 @@
       return ('0' + number).slice(-2);
     }
 
-    function increaseValue(inputId) {
-      var input = document.getElementById(inputId);
-      input.value = parseInt(input.value) + 1;
-    }
-
-    function decreaseValue(inputId) {
-      var input = document.getElementById(inputId);
-      input.value = parseInt(input.value) - 1;
+    function resetValues() {
+      document.getElementById('hours').value = 0;
+      document.getElementById('minutes').value = 0;
+      document.getElementById('seconds').value = 0;
+	  document.getElementById('timestamps').value = '';
     }
 
     function copyAdjustedTimestamps() {
@@ -94,7 +87,7 @@
       adjustedTimestamps.select();
       document.execCommand('copy');
     }
-    
+
     function handleTabKey(event) {
       if (event.key === 'Tab') {
         event.preventDefault();
@@ -105,10 +98,25 @@
         textarea.selectionStart = textarea.selectionEnd = start + 1;
       }
     }
+
+    function handleWheelEvent(inputId, event) {
+      var input = document.getElementById(inputId);
+      var delta = -Math.sign(event.deltaY);
+      input.value = parseInt(input.value) + delta;
+      event.preventDefault();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var inputElements = ['hours', 'minutes', 'seconds'];
+      inputElements.forEach(function(inputId) {
+        var input = document.getElementById(inputId);
+        input.addEventListener('wheel', handleWheelEvent.bind(null, inputId));
+      });	
+    });
   </script>
 </head>
 <body>
-  <h1>타임스탬프 <span style="font-size: small;">(2023-07-16 22:31)</span></h1>
+  <h1>타임스탬프 <span style="font-size: small;">(2023-09-01 02:55)</span></h1>
 
   <div class="input-container">
     <label for="timestamps">타임스탬프:&nbsp;</label>
@@ -120,14 +128,13 @@
 	<label>초</label>
 	
 	<button onclick="adjustTimestamp()">적용</button>
+	<button onclick="resetValues()">초기화</button>
   </div>
-  <textarea id="timestamps" placeholder="0:00:00	메모 (*수동 입력 시 '시간'과 '메모'사이는 띄어쓰기가 아닌 'Tab' 입니다)" onkeydown="handleTabKey(event)"></textarea>
-
-  <br /><br />
-
+  <textarea id="timestamps" placeholder="0:00:00	내용 (*수동 입력 시 시간과 내용 사이는 띄어쓰기가 아닌 'Tab' 입니다)" onkeydown="handleTabKey(event)"></textarea>
+  <br>
+  <br>
   <label for="adjustedTimestamps">변경된 타임스탬프:</label>
-  <button class="copy-button" onclick="copyAdjustedTimestamps()">Copy</button>
+  <button onclick="copyAdjustedTimestamps()">복사</button>
   <textarea id="adjustedTimestamps" readonly></textarea>
-  
 </body>
 </html>
